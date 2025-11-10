@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "python-mcp-chat": {
+      "command": "python",
+      "args": ["-m", "app.main"],
+      "cwd": "/ruta/completa/a/python-mcp-chat"
+    }
+  }
+}
