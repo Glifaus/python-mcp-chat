@@ -1,6 +1,7 @@
 """MCP Server for Python MCP Chat."""
 import asyncio
 import json
+import os
 from typing import Any
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -8,6 +9,12 @@ from mcp.types import Tool, TextContent
 from app.database import SessionLocal, init_db
 from app import crud, schemas
 from app.config import ALLOWED_EMOJIS
+
+# Optional: run the FastAPI app in background if MCP_HTTP_PORT is set
+try:
+    from uvicorn import Config, Server as UvicornServer
+except Exception:
+    UvicornServer = None
 
 
 app = Server("python-mcp-chat")
@@ -225,10 +232,25 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 async def main():
     """Main entry point for the MCP server."""
     init_db()
+    # If MCP_HTTP_PORT is set, start the FastAPI (uvicorn) server in background
+    # Default to port 8000 unless overridden by MCP_HTTP_PORT
+    http_port = os.getenv("MCP_HTTP_PORT", "8000")
+    if UvicornServer is not None:
+        try:
+            port = int(http_port) if http_port else 8000
+            config = Config("app.api:api", host="0.0.0.0", port=port, loop="asyncio", lifespan="on")
+            uvicorn_server = UvicornServer(config)
+
+            # Run uvicorn in a background task so stdio MCP server can run concurrently
+            asyncio.create_task(uvicorn_server.serve())
+        except Exception:
+            # Fall through to stdio server if uvicorn couldn't start
+            pass
+
     async with stdio_server() as (read_stream, write_stream):
         await app.run(
-            read_stream, 
-            write_stream, 
+            read_stream,
+            write_stream,
             app.create_initialization_options()
         )
 

@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "python-mcp-chat": {
+      "command": "python",
+      "args": [
+        "-m",
+        "app.main"
+      ],
+      "cwd": "/workspaces/python-mcp-chat"
+    }
+  }
+}
