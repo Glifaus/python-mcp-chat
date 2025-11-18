@@ -17,7 +17,11 @@ except Exception:
     UvicornServer = None
 
 
-app = Server("python-mcp-chat")
+app = Server("python-mcp-chat").instructions(
+    "You are an MCP server for a chat application called Python MCP Chat. "
+    "You have access to various tools to manage messages, threads, reactions, channels, and users. "
+    "Use the tools as needed to fulfill client requests."
+)
 
 
 @app.list_tools()
